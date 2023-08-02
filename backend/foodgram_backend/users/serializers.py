@@ -24,11 +24,8 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, username):
         user = self.context["request"].user
-        return (not user.is_anonymous
-                and Subscription.objects.filter(
-                    user=user,
-                    subscribing=username
-                ).exists())
+        return (not user.is_anonymous and Subscription.objects.filter(
+                user=user, subscribing=username).exists())
 
 
 class SubscribeRecipeSerializer(serializers.ModelSerializer):
@@ -63,12 +60,9 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         """Метод получения рецептов для подписки."""
         request = self.context.get("request")
         limit = request.GET.get("recipes_limit")
-        recipes = (
-            obj.subscribing.recipe.all()[:int(limit)] if limit
-            else obj.subscribing.recipe.all())
-        return SubscribeRecipeSerializer(
-            recipes,
-            many=True).data
+        recipes = (obj.subscribing.recipe.all()[:int(limit)]
+                   if limit else obj.subscribing.recipe.all())
+        return SubscribeRecipeSerializer(recipes, many=True).data
 
     def get_recipes_count(self, obj):
         """Метод получения количества рецептов для подписки."""

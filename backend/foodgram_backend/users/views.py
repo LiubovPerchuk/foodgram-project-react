@@ -42,9 +42,7 @@ class CustomUserViewSet(UserViewSet):
                     "Нельзя подписаться на самого себя.")
             try:
                 obj, created = Subscription.objects.get_or_create(
-                    user=request.user,
-                    subscribing=user
-                )
+                    user=request.user, subscribing=user)
                 if not created:
                     raise exceptions.ValidationError("Вы уже подписались.")
                 serializer = SubscriptionSerializer(
