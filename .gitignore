@@ -130,4 +130,7 @@ dmypy.json
 
 # .idea
 .idea
+.DS_Store
 .vscode/
+
+/backend/media/recipes/*
