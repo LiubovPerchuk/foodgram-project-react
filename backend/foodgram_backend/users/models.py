@@ -51,28 +51,3 @@ class User(AbstractUser):
     @property
     def is_admin(self):
         return self.role == self.ADMIN
-
-
-class Subscription(models.Model):
-    """Модель подписки."""
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="user",
-        verbose_name="Имя подписчика")
-    subscribing = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="subscribing",
-        verbose_name="Имя автора")
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=("user", "subscribing"),
-                                    name="unique_subscription")
-        ]
-        verbose_name = "Подписка"
-        verbose_name_plural = "Подписки"
-
-    def __str__(self):
-        return f"Подписка {self.user} на {self.subscribing}"

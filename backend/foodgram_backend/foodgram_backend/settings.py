@@ -8,11 +8,11 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-SECRET_KEY = os.getenv('SECRET_KEY', default='123')
+SECRET_KEY = os.getenv("SECRET_KEY", default="123")
 
-DEBUG = False
+DEBUG = os.getenv('DEBUG', default=False)
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["127.0.0.1"]
 
 
 INSTALLED_APPS = [
@@ -135,7 +135,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.TokenAuthentication",
     ],
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 6,
 }
 
@@ -143,7 +143,9 @@ DJOSER = {
     "LOGIN_FIELD": "email",
     "HIDE_USERS": False,
     "SERIALIZERS": {
-        "user_create": "users.serializers.UserSigninSerializer",
+        "user_create": "api.serializers.UserSigninSerializer",
+        'user': 'api.serializers.UserSerializer',
+        'current_user': 'api.serializers.UserSerializer',
     },
     "PERMISSIONS": {
         "user": ("rest_framework.permissions.IsAuthenticated",),

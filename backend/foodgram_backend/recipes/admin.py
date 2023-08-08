@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.admin import ModelAdmin
 
-from .models import Ingredient, Recipe, RecipeIngredients, Tag
+from .models import Ingredient, Recipe, RecipeIngredients, Subscription, Tag
 
 
 @admin.register(Ingredient)
@@ -37,4 +37,11 @@ class RecipeAdmin(admin.ModelAdmin):
 class RecipeIngredientsAdmin(admin.ModelAdmin):
     list_display = ("recipe", "ingredient", "amount")
     search_fields = ("ingredient__name",)
+    empty_value_display = "-пусто-"
+
+
+@admin.register(Subscription)
+class SubscriptionAdmin(ModelAdmin):
+    list_display = ("id", "user", "subscribing")
+    search_fields = ("user__email", "subscribing__email")
     empty_value_display = "-пусто-"
