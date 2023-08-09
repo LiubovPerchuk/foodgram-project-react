@@ -3,6 +3,7 @@ import os
 
 from django.conf import settings
 from django.core.management import BaseCommand
+
 from recipes.models import Ingredient
 
 
@@ -10,7 +11,7 @@ class Command(BaseCommand):
     help = "Загрузка ингредиентов в базу данных."
 
     def handle(self, *args, **kwargs):
-        base_dir = os.path.dirname(os.path.dirname(settings.BASE_DIR))
+        base_dir = settings.BASE_DIR
         data_path = os.path.join(base_dir, "data", "ingredients.csv")
 
         with open(data_path, mode="r", encoding="utf-8") as file:

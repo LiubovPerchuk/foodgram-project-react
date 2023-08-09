@@ -51,12 +51,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """Метод для получения queryset с примененными фильтрами."""
         queryset = super().get_queryset()
         is_favorited = self.request.query_params.get("is_favorited")
+        if is_favorited is not None:
+            queryset = queryset.filter(favorite_recipe__user=self.request.user)
+
         is_in_shopping_cart = self.request.query_params.get(
             "is_in_shopping_cart")
-        if is_favorited is not None and int(is_favorited) == 1:
-            queryset = queryset.filter(favorite_recipe__user=self.request.user)
-        elif is_in_shopping_cart is not None and int(is_in_shopping_cart) == 1:
+        if is_in_shopping_cart is not None:
             queryset = queryset.filter(shopping_list__user=self.request.user)
+
+        if is_favorited is not None and is_in_shopping_cart is not None:
+            queryset = queryset.filter(
+                favorite_recipe__user=self.request.user,
+                shopping_list__user=self.request.user)
         return queryset
 
     @action(detail=True, methods=("post", "delete"))
@@ -73,14 +79,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 recipe, context={"request": request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        if self.request.method == "DELETE":
-            if not Favorite.objects.filter(user=user, recipe=recipe).exists():
-                raise exceptions.ValidationError(
-                    "Рецепта нет в избранном или он уже удален.")
-            favorite = get_object_or_404(Favorite, user=user, recipe=recipe)
-            favorite.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        favorite = get_object_or_404(Favorite, user=user, recipe=recipe)
+        favorite.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=("get",),
             permission_classes=(IsAuthenticated,))
@@ -118,16 +119,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 recipe, context={"request": request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        if self.request.method == "DELETE":
-            if not ShoppingList.objects.filter(
-                    user=user, recipe=recipe).exists():
-                raise exceptions.ValidationError(
-                    "Рецепта нет в списке покупок или он уже удален.")
-            shopping_cart = get_object_or_404(
-                ShoppingList, user=user, recipe=recipe)
-            shopping_cart.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        shopping_cart = get_object_or_404(
+            ShoppingList, user=user, recipe=recipe)
+        shopping_cart.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
@@ -141,8 +136,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
 
     def get_queryset(self):
-        """Метод дополнительную сортировки по полю name
-        в виде регистронезависимой сортировки."""
+        """Метод регистронезависимой сортировки по полю name."""
         queryset = super().get_queryset()
         queryset = queryset.annotate(lower_name=Lower("name"))
         queryset = queryset.order_by("lower_name")

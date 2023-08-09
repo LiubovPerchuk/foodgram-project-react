@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.db.models import F, Q
-from django.shortcuts import get_object_or_404
+from django.db.models import F
 from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers
 
@@ -10,6 +9,8 @@ from recipes.models import (Ingredient, Recipe, RecipeIngredients,
 from recipes.validators import validate_amount
 
 User = get_user_model()
+
+MINTEXT = 10
 
 
 class UserSigninSerializer(UserCreateSerializer):
@@ -120,18 +121,18 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                   "cooking_time")
 
     def validate_name(self, name):
-        """Метод валидации поля названия рецепта."""
+        """Метод валидации для поля названия рецепта."""
         name = name.capitalize()
         is_exist = Recipe.objects.filter(
-            Q(author=self.context["request"].user) & Q(name__iexact=name)
-        ).exists()
+            author=self.context["request"].user,
+            name__iexact=name).exists()
         if is_exist and self.context["request"].method == "POST":
             raise serializers.ValidationError(
                 "Рецепт с таким названием уже существует.")
         return name
 
     def validate_ingredients(self, data):
-        """Метод валидации поля ингредиенты."""
+        """Метод валидации для поля ингредиенты."""
         ingredients = data
         if not ingredients:
             raise serializers.ValidationError(
@@ -139,16 +140,19 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
         ingredients_list = []
         for item in ingredients:
-            ingredient = get_object_or_404(Ingredient, id=item["id"])
-            if ingredient in ingredients_list:
+            ingredient_id = item["id"]
+            if not Ingredient.objects.filter(id=ingredient_id).exists():
+                raise serializers.ValidationError(
+                    "Передан несуществующий ингредиент!")
+            if ingredient_id in ingredients_list:
                 raise serializers.ValidationError(
                     "Ингредиенты не могут повторяться!")
-            ingredients_list.append(ingredient)
+            ingredients_list.append(ingredient_id)
         return data
 
     def validate_text(self, text):
-        """Метод валидации поля описания рецепта."""
-        if len(text) < 10:
+        """Метод валидации для поля описания рецепта."""
+        if len(text) < MINTEXT:
             raise serializers.ValidationError(
                 "Описание рецепта должно быть длиннее 10 символов.")
         return text.capitalize()
@@ -206,9 +210,8 @@ class RecipeInfoSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "author", "is_favorited",
                             "is_in_shopping_cart")
 
-    def get_ingredients(self, obj):
+    def get_ingredients(self, recipe):
         """Метод получения ингредиентов в рецепте."""
-        recipe = obj
         ingredients = recipe.ingredients.values(
             "id",
             "name",

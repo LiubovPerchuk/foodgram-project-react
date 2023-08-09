@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.core.validators import MinValueValidator
 from django.db import models
 
 from .validators import hex_color_validator, validate_amount
@@ -111,9 +112,8 @@ class RecipeIngredients(models.Model):
         related_name="recipe_ingredients",
         verbose_name="Игредиент")
     amount = models.PositiveSmallIntegerField(
-        default=1,
-        validators=[validate_amount],
-        verbose_name="Количество ингредиентов",)
+        validators=[MinValueValidator(1, "Минимум")],
+        verbose_name="Количество ингредиентов")
 
     class Meta:
         verbose_name = "Ингредиент_в_рецепте"
