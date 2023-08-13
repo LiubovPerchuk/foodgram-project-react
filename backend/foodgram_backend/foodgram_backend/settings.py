@@ -62,7 +62,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "foodgram_backend.wsgi.application"
 
-#SESSION_ENGINE = "django.contrib.sessions.backends.db"
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
