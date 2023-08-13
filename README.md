@@ -1,4 +1,5 @@
 # Проект "Foodgram-project-react"
+Доступный домен: http://super-foodgram.sytes.net
 
 ## Описание проекта:
 
@@ -16,7 +17,7 @@ Django Rest FrameWork 3.14
 
 ### Клонируйте репозиторий и перейдите в него в командной строке:
 
-git clone 'ссылка на репозиторий'
+git clone https://github.com/LiubovPerchuk/foodgram-project-react
 cd foodgram-project-react
 ### Cоздайте и активируйте виртуальное окружение:
 
