@@ -2,27 +2,9 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
 
-from .validators import hex_color_validator, validate_amount
+from .validators import hex_color_validator
 
 User = get_user_model()
-
-
-class Ingredient(models.Model):
-    """Модель для описания ингредиентов."""
-    name = models.CharField(
-        max_length=200,
-        verbose_name="Название ингредиента")
-    measurement_unit = models.CharField(
-        max_length=200,
-        verbose_name="Единица измерения ингредиента")
-
-    class Meta:
-        ordering = ("name",)
-        verbose_name = "Ингредиент"
-        verbose_name_plural = "Ингредиенты"
-
-    def __str__(self):
-        return f"{self.name}, {self.measurement_unit}"
 
 
 class Tag(models.Model):
@@ -48,6 +30,24 @@ class Tag(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Ingredient(models.Model):
+    """Модель для описания ингредиентов."""
+    name = models.CharField(
+        max_length=200,
+        verbose_name="Название ингредиента")
+    measurement_unit = models.CharField(
+        max_length=200,
+        verbose_name="Единица измерения ингредиента")
+
+    class Meta:
+        ordering = ("name",)
+        verbose_name = "Ингредиент"
+        verbose_name_plural = "Ингредиенты"
+
+    def __str__(self):
+        return f"{self.name}, {self.measurement_unit}"
 
 
 class Recipe(models.Model):
@@ -80,8 +80,7 @@ class Recipe(models.Model):
         related_name="tags",
         verbose_name="Тег к рецепту")
     cooking_time = models.PositiveSmallIntegerField(
-        default=1,
-        validators=[validate_amount],
+        validators=[MinValueValidator(1, "Минимум")],
         blank=True,
         null=True,
         verbose_name="Время приготовления (в минутах)")
@@ -122,6 +121,31 @@ class RecipeIngredients(models.Model):
     def __str__(self):
         return (f"{self.ingredient.name} ({self.ingredient.measurement_unit})"
                 f" - {self.amount}")
+
+
+class Subscription(models.Model):
+    """Модель подписки."""
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="user",
+        verbose_name="Имя подписчика")
+    subscribing = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="subscribing",
+        verbose_name="Имя автора")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=("user", "subscribing"),
+                                    name="unique_subscription")
+        ]
+        verbose_name = "Подписка"
+        verbose_name_plural = "Подписки"
+
+    def __str__(self):
+        return f"Подписка {self.user} на {self.subscribing}"
 
 
 class Favorite(models.Model):
@@ -173,28 +197,3 @@ class ShoppingList(models.Model):
 
     def __str__(self):
         return f"Рецепт {self.recipe} добавлен в список покупок к {self.user}"
-
-
-class Subscription(models.Model):
-    """Модель подписки."""
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="user",
-        verbose_name="Имя подписчика")
-    subscribing = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="subscribing",
-        verbose_name="Имя автора")
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=("user", "subscribing"),
-                                    name="unique_subscription")
-        ]
-        verbose_name = "Подписка"
-        verbose_name_plural = "Подписки"
-
-    def __str__(self):
-        return f"Подписка {self.user} на {self.subscribing}"

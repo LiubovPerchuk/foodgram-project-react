@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.db.models.functions import Lower
 from django.http import HttpResponse
@@ -12,12 +13,15 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from recipes.models import (Ingredient, Recipe, RecipeIngredients,
-                            ShoppingList, Subscription, Tag, User, Favorite)
+                            ShoppingList, Subscription, Tag, Favorite)
 from .permissions import IsAuthorOrAdminOrReadOnly
 from .serializers import (ActionRecipeSerializer, IngredientSerializer,
                           RecipeCreateSerializer, RecipeInfoSerializer,
                           SubscriptionSerializer, TagSerializer,
                           UserSerializer)
+
+
+User = get_user_model()
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -138,6 +142,11 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         """Метод регистронезависимой сортировки по полю name."""
         queryset = super().get_queryset()
+        ingredient_query = self.request.query_params.get("name")
+
+        if ingredient_query:
+            queryset = queryset.filter(
+                name__startswith=ingredient_query[0].lower())
         queryset = queryset.annotate(lower_name=Lower("name"))
         queryset = queryset.order_by("lower_name")
         return queryset

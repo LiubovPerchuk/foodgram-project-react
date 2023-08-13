@@ -6,7 +6,6 @@ from rest_framework import serializers
 from recipes.fields import Base64ImageField
 from recipes.models import (Ingredient, Recipe, RecipeIngredients,
                             Subscription, Tag)
-from recipes.validators import validate_amount
 
 User = get_user_model()
 
@@ -96,7 +95,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 class RecipeIngredientsSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(write_only=True)
     amount = serializers.IntegerField(
-        write_only=True, validators=[validate_amount])
+        write_only=True)
 
     class Meta:
         model = RecipeIngredients
@@ -112,7 +111,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(), many=True)
-    cooking_time = serializers.IntegerField(validators=[validate_amount])
 
     class Meta:
         model = Recipe
