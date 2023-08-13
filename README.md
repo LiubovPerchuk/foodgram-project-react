@@ -1,8 +1,8 @@
 # Проект "Foodgram-project-react"
 
-Домен доступен по адресу: http://super-foodgram.sytes.net/
+Домен доступен по адресу: https://super-foodgram.sytes.net/
 
-Админ доступен по адресу: http://super-foodgram.sytes.net/admin/
+Админ доступен по адресу: https://super-foodgram.sytes.net/admin/
 e-mail: admin@admin.ru
 password: 1
 
@@ -18,7 +18,7 @@ Python 3.9
 Django 3.2
 Django Rest FrameWork 3.14
 PostgreSQL 13.10
-Gunicorn 20.1
+Gunicorn 20.1.0
 
 ## Как запустить проект:
 
