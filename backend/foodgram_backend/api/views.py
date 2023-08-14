@@ -24,6 +24,31 @@ from .serializers import (ActionRecipeSerializer, IngredientSerializer,
 User = get_user_model()
 
 
+class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+    """Вьюсет для ингредиентов."""
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
+    permission_classes = (AllowAny,)
+    filter_backends = (DjangoFilterBackend, SearchFilter)
+    search_fields = ("name",)
+    ordering_fields = ("name",)
+    pagination_class = None
+
+    def get_queryset(self):
+        """Метод регистронезависимой сортировки по полю name."""
+        queryset = super().get_queryset()
+        ingredient_query = self.request.query_params.get("name")
+
+        if ingredient_query:
+            for i in range(1, len(ingredient_query) + 1):
+                subset_query = ingredient_query[:i]
+                queryset = queryset.filter(name__istartswith=subset_query)
+
+        queryset = queryset.annotate(lower_name=Lower("name"))
+        queryset = queryset.order_by("lower_name")
+        return queryset
+
+
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     """Вьюсет для тегов."""
     queryset = Tag.objects.all()
@@ -127,29 +152,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             ShoppingList, user=user, recipe=recipe)
         shopping_cart.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
-    """Вьюсет для ингредиентов."""
-    queryset = Ingredient.objects.all()
-    serializer_class = IngredientSerializer
-    permission_classes = (AllowAny,)
-    filter_backends = (DjangoFilterBackend, SearchFilter)
-    search_fields = ("^name", "name__icontains")
-    ordering_fields = ("name",)
-    pagination_class = None
-
-    def get_queryset(self):
-        """Метод регистронезависимой сортировки по полю name."""
-        queryset = super().get_queryset()
-        ingredient_query = self.request.query_params.get("name")
-
-        if ingredient_query:
-            queryset = queryset.filter(
-                name__startswith=ingredient_query[0].lower())
-        queryset = queryset.annotate(lower_name=Lower("name"))
-        queryset = queryset.order_by("lower_name")
-        return queryset
 
 
 class CustomUserViewSet(UserViewSet):
