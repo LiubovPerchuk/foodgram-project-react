@@ -13,7 +13,7 @@ services:
       - pg_data:/var/lib/postgresql/data
 
   backend:
-    build: ../backend/foodgram_backend
+    image: useralf/foodgram_backend
     env_file: ../.env
     volumes:
       - static:/app/static/
@@ -22,18 +22,14 @@ services:
       - db
 
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: useralf/foodgram_frontend
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
       - backend
 
   nginx:
-    build:
-      context: ../infra
-      dockerfile: Dockerfile
+    image: useralf/foodgram_nginx
     ports:
       - "7000:80"
     volumes:
